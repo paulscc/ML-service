@@ -2,35 +2,31 @@ from fastapi import FastAPI, UploadFile, File
 from fastai.learner import load_learner
 from fastai.vision.all import PILImage
 import io
+import pathlib
 
 app = FastAPI()
 
 print("Cargando modelo...")
+
+temp = pathlib.PosixPath
+pathlib.PosixPath = pathlib.WindowsPath
+
 learn = load_learner("multipetsmodel.pkl", cpu=True)
+
+pathlib.PosixPath = temp
+
 print("Modelo cargado")
-
-
-@app.get("/")
-def root():
-    return {
-        "message": "API funcionando",
-        "modelActive": True
-    }
 
 
 @app.get("/health")
 def health():
-    return {
-        "status": "ok",
-        "modelActive": True
-    }
+    return {"status": "ok", "modelActive": True}
 
 
 @app.post("/predict")
 async def predict(file: UploadFile = File(...)):
     try:
         contents = await file.read()
-
         img = PILImage.create(io.BytesIO(contents))
 
         pred, pred_idx, probs = learn.predict(img)
