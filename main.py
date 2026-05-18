@@ -4,23 +4,30 @@ from fastai.vision.all import PILImage
 import io
 import pathlib
 
+# fix WindowsPath pickle issue
+pathlib.WindowsPath = pathlib.PosixPath
+
 app = FastAPI()
 
 print("Cargando modelo...")
-
-temp = pathlib.PosixPath
-pathlib.PosixPath = pathlib.WindowsPath
-
 learn = load_learner("multipetsmodel.pkl", cpu=True)
-
-pathlib.PosixPath = temp
-
 print("Modelo cargado")
+
+
+@app.get("/")
+def root():
+    return {
+        "message": "API funcionando",
+        "modelActive": True
+    }
 
 
 @app.get("/health")
 def health():
-    return {"status": "ok", "modelActive": True}
+    return {
+        "status": "ok",
+        "modelActive": True
+    }
 
 
 @app.post("/predict")
