@@ -8,17 +8,22 @@ import pathlib
 pathlib.WindowsPath = pathlib.PosixPath
 
 app = FastAPI()
+learn = None
 
-print("Cargando modelo...")
-learn = load_learner("multipetsmodel.pkl", cpu=True)
-print("Modelo cargado")
+
+@app.on_event("startup")
+def startup_event():
+    global learn
+    print("Cargando modelo...")
+    learn = load_learner("multipetsmodel.pkl", cpu=True)
+    print("Modelo cargado")
 
 
 @app.get("/")
 def root():
     return {
         "message": "API funcionando",
-        "modelActive": True
+        "modelActive": learn is not None
     }
 
 
@@ -26,7 +31,7 @@ def root():
 def health():
     return {
         "status": "ok",
-        "modelActive": True
+        "modelActive": learn is not None
     }
 
 
