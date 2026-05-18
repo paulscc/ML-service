@@ -3,36 +3,35 @@ from fastai.learner import load_learner
 from fastai.vision.all import PILImage
 import io
 import pathlib
+from contextlib import asynccontextmanager
 
 # fix WindowsPath pickle issue
 pathlib.WindowsPath = pathlib.PosixPath
 
-app = FastAPI()
 learn = None
 
 
-@app.on_event("startup")
-def startup_event():
+@asynccontextmanager
+async def lifespan(app: FastAPI):
     global learn
     print("Cargando modelo...")
     learn = load_learner("multipetsmodel.pkl", cpu=True)
     print("Modelo cargado")
+    yield
+    print("Shutdown")
+
+
+app = FastAPI(lifespan=lifespan)
 
 
 @app.get("/")
 def root():
-    return {
-        "message": "API funcionando",
-        "modelActive": learn is not None
-    }
+    return {"message": "API funcionando", "modelActive": learn is not None}
 
 
 @app.get("/health")
 def health():
-    return {
-        "status": "ok",
-        "modelActive": learn is not None
-    }
+    return {"status": "ok", "modelActive": learn is not None}
 
 
 @app.post("/predict")
@@ -48,12 +47,7 @@ async def predict(file: UploadFile = File(...)):
             "prediction": str(pred),
             "confidence": float(probs[pred_idx]),
             "classes": list(learn.dls.vocab),
-            "modelActive": True
         }
 
     except Exception as e:
-        return {
-            "success": False,
-            "error": str(e),
-            "modelActive": False
-        }
+        return {"success": False, "error": str(e)}
