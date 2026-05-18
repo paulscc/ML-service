@@ -9,12 +9,22 @@ print("Cargando modelo...")
 learn = load_learner("multipetsmodel.pkl", cpu=True)
 print("Modelo cargado")
 
+
+@app.get("/")
+def root():
+    return {
+        "message": "API funcionando",
+        "modelActive": True
+    }
+
+
 @app.get("/health")
 def health():
     return {
         "status": "ok",
         "modelActive": True
     }
+
 
 @app.post("/predict")
 async def predict(file: UploadFile = File(...)):
