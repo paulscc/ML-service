@@ -6,6 +6,7 @@ uvicorn[standard]==0.30.6
 fastai==2.7.18
 torch==2.4.1+cpu
 torchvision==0.19.1+cpu
+timm==1.0.15
 
 pillow==10.4.0
 python-multipart==0.0.9
